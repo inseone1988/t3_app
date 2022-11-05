@@ -78,3 +78,10 @@ model Product {
 
   @@unique([slug])
 }
+
+model ShoppingCart {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  products  Product[]
+}
