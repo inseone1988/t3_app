@@ -6,10 +6,31 @@ import { faShoppingCart,faUser } from "@fortawesome/free-solid-svg-icons";
 
 import { trpc } from "../../utils/trpc";
 import { useSession, signIn } from "next-auth/react";
+import { Product } from "../../../types/product";
 
 const Home: NextPage = () => {
   const products = trpc.product.getAll.useQuery();
   const { data: session } = useSession();
+
+  const rows = products.data?products.data.map((product:Product) => {
+    return (
+      <div className="max-w-sm rounded overflow-hidden shadow-lg">
+        <img className="w-full" src={"https://placeimg.com/640/480/tech"} alt="Sunset in the mountains" />
+        <div className="px-6 py-4">
+          <div className="font-bold text-l mb-2">{product.name}</div>
+          <p className="text-gray-700 text-sm">
+            {product.description}
+          </p>
+          <p className={Number(product.stock)>1?"text-teal-700":"text-red-700"}>{Number(product.stock)>1?`En stock : ${product.stock}`:"Agotado"}</p>
+          <button className="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded py-2 px-3 text-sm">
+            Agregar a carrito +
+            <FontAwesomeIcon icon={faShoppingCart} className={"ml-1 mr-2"} />
+          </button>
+        </div>
+      </div>
+    );
+  }) : <h1>Opps... something should be already here X|</h1>;
+
   return (
     <>
       <Head>
@@ -35,7 +56,10 @@ const Home: NextPage = () => {
       </nav>
       <main className="container mx-auto flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center justify-center gap-2">
-          <h1 className="text-4xl font-bold text-gray-800">Welcome to my awesome store</h1>
+          <div className="grid grid-cols-1 sm grid-cols-2 md grid-cols-3 lg grid-cols-4 xl grid-cols-5 gap-4">
+            {rows}
+          </div>
+
         </div>
       </main>
     </>
