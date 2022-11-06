@@ -66,22 +66,24 @@ model VerificationToken {
 }
 
 model Product {
-  id        String   @id @default(cuid())
-  name      String
-  price     Int
-  description String
-  slug      String
-  stock     Int
-  price     Decimal
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String        @id @default(cuid())
+  name           String
+  description    String
+  slug           String
+  stock          String
+  price          String
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  ShoppingCart   ShoppingCart? @relation(fields: [shoppingCartId], references: [id])
+  shoppingCartId String?
 
   @@unique([slug])
 }
 
 model ShoppingCart {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id        String    @id @default(cuid())
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  userId    String
   products  Product[]
 }
