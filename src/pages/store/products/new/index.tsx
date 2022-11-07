@@ -7,7 +7,7 @@ import {useState} from "react";
 
 import { trpc } from "../../../../utils/trpc";
 import { useSession, signIn } from "next-auth/react";
-import { SyntheticEvent } from "react";
+import {faker} from '@faker-js/faker';
 
 const Home: NextPage = () => {
 
@@ -17,7 +17,7 @@ const Home: NextPage = () => {
     const [product, setProduct] = useState(productData);
     const {mutate:createProduct} = trpc.product.createOne.useMutation();
     
-    function changeListener(e:SyntheticBaseEvent) {
+    function changeListener(e:SyntheticEvent) {
         console.log(productData);
         productData[e.target.name] = e.target.value;
     }
@@ -25,6 +25,20 @@ const Home: NextPage = () => {
     function setValue(target: EventTarget & HTMLInputElement) {
         product[target.name] = target.value;
         return product;
+    }
+
+    function generateTestData() {
+        for (let i = 0; i < 59; i++) {
+            const product = {
+                name: faker.commerce.productName(),
+                description: faker.commerce.productDescription(),
+                price: faker.random.numeric(3),
+                stock: faker.random.numeric(3),
+                image: faker.image.imageUrl(),
+                slug: faker.lorem.slug(),
+            }
+            createProduct(product);
+        }
     }
 
     return (
@@ -54,6 +68,7 @@ const Home: NextPage = () => {
                 <div className="flex flex-col items-center justify-center gap-2">
                     <h1 className="text-4xl font-bold text-gray-800">Creacion de productos</h1>
                 </div>
+                <button onClick={generateTestData}> Generate test data</button>
                 <div className="flex flex-col items-center justify-center gap-2">
                     <div className="flex flex-col items-center justify-center gap-2 bg-white shadow-md rounded px-8 pt-6 pb-8 mb-4">
                         <div className="mb-4">

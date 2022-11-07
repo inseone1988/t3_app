@@ -7,22 +7,28 @@ import { faShoppingCart,faUser } from "@fortawesome/free-solid-svg-icons";
 import { trpc } from "../../utils/trpc";
 import { useSession, signIn } from "next-auth/react";
 import { Product } from "../../../types/product";
+import numeral from "numeral";
 
 const Home: NextPage = () => {
   const products = trpc.product.getAll.useQuery();
   const { data: session } = useSession();
 
-  const rows = products.data?products.data.map((product:Product) => {
+
+
+  const rows = products.data?products.data.map((product:Product,index:number) => {
     return (
-      <div className="max-w-sm rounded overflow-hidden shadow-lg">
-        <img className="w-full" src={"https://placeimg.com/640/480/tech"} alt="Sunset in the mountains" />
+      <div className="max-w-sm rounded overflow-hidden shadow-lg" key={index}>
+        <img className="w-full" src={"https://picsum.photos/200/100?random="+ (index+1)} alt="Sunset in the mountains" />
         <div className="px-6 py-4">
-          <div className="font-bold text-l mb-2">{product.name}</div>
-          <p className="text-gray-700 text-sm">
-            {product.description}
+          <div className="font-bold text-sm mb-2 h-10">{product.name}</div>
+          <p className="text-gray-700 text-xs h-10">
+            {product.description.substring(0,50) + " ..."}
           </p>
-          <p className={Number(product.stock)>1?"text-teal-700":"text-red-700"}>{Number(product.stock)>1?`En stock : ${product.stock}`:"Agotado"}</p>
-          <button className="mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded py-2 px-3 text-sm">
+          <p className={Number(product.stock)>1?"text-teal-700 h-8 mt-2":"text-red-700 h-8 mt-2"}>{Number(product.stock)>1?`En stock : ${product.stock}`:"Agotado"}</p>
+          <h4 className="text-xl font-bold text-center text-blue-800">
+             {numeral(product.price).format("$0.00")}
+          </h4>
+          <button className={`mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded py-2 px-3 text-sm ${product.stock>1? "":"hidden"}`}>
             Agregar a carrito +
             <FontAwesomeIcon icon={faShoppingCart} className={"ml-1 mr-2"} />
           </button>
@@ -56,10 +62,9 @@ const Home: NextPage = () => {
       </nav>
       <main className="container mx-auto flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center justify-center gap-2">
-          <div className="grid grid-cols-1 sm grid-cols-2 md grid-cols-3 lg grid-cols-4 xl grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm grid-cols-2 md grid-cols-3 lg grid-cols-6 xl grid-cols-12 gap-4">
             {rows}
           </div>
-
         </div>
       </main>
     </>
