@@ -10,7 +10,9 @@ import { useState } from "react";
 import {CartView} from "../../../../components/cartview";
 
 const Cart: NextPage = () => {
-  const shoppingCart = trpc.shoppingCart.getCustomerCart.useQuery();
+  const {data: user } = trpc.user.getOne.useQuery({id:'1'});
+  const {data: shoppingCart } = trpc.shoppingCart.getCustomerCart.useQuery();
+  const [cart, setCart] = useState(shoppingCart);
 
   return (
     <>
@@ -29,14 +31,14 @@ const Cart: NextPage = () => {
             <FontAwesomeIcon icon={faShoppingCart} />
             <span className="ml-2">Carrito <span className="rounded-full bg-gray-500 p-1 text-white">0</span></span>
           </Link>
-          <button onClick={() => { console.log(session); signIn() }} className="">
+          <button className="">
             <FontAwesomeIcon icon={faUser} className={"ml-1 mr-2"} />
-            {session ? "Mi cuenta" : "Iniciar sesion"}
+            <span className="ml-2">{user?user.name:"Iniciar sesion"}</span>
           </button>
         </div>
       </nav>
       <main>
-        <CartView shoppingCart={shoppingCart} />
+        <CartView shoppingCart={cart} />
       </main>
     </>
   );

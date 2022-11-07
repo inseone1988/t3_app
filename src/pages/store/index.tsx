@@ -9,11 +9,36 @@ import { useSession, signIn } from "next-auth/react";
 import { Product } from "../../../types/product";
 import numeral from "numeral";
 
+import {useState} from "react";
+import { Cart } from "../../../types/cart";
+
 const Home: NextPage = () => {
   const products = trpc.product.getAll.useQuery();
+  const user = trpc.user.getOne.useQuery({id:"1"});
+  const sCart = trpc.shoppingCart.getCustomerCart.useQuery();
   const { data: session } = useSession();
+  const {mutate: saveCartItem} = trpc.cartItem.addCartItem.useMutation();
+  const [cart, setCart] = useState<Cart>({ id: "", items: [], total: 0,active:true});
+  const [itemcount, setItemcount] = useState<number>(0);
+  const [total, setTotal] = useState<number>(0);
 
-
+  function addToCart(product: Product) {
+    const newCart = { ...cart };
+    newCart.userId = ("id" in user.data)?user.data.id:"";
+    const data = {
+      userId: user.data?user.data.id:"1",
+      quantity: 1,
+      product: product,
+      cartId:("id" in sCart.data)?sCart.data.id:"" ,
+      productId:product.id }
+    newCart.items.push(data);
+    newCart.total += Number(product.price);
+    saveCartItem(data);
+    console.log(newCart);
+    setItemcount(newCart.items.length);
+    setTotal(newCart.total);
+    setCart(newCart);
+  }
 
   const rows = products.data?products.data.map((product:Product,index:number) => {
     return (
@@ -28,7 +53,7 @@ const Home: NextPage = () => {
           <h4 className="text-xl font-bold text-center text-blue-800">
              {numeral(product.price).format("$0.00")}
           </h4>
-          <button className={`mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded py-2 px-3 text-sm ${product.stock>1? "":"hidden"}`}>
+          <button onClick={()=>addToCart(product)} className={`mt-3 bg-blue-500 hover:bg-blue-700 text-white font-bold rounded py-2 px-3 text-sm ${product.stock>1? "":"hidden"}`}>
             Agregar a carrito +
             <FontAwesomeIcon icon={faShoppingCart} className={"ml-1 mr-2"} />
           </button>
@@ -52,7 +77,7 @@ const Home: NextPage = () => {
         <div className={"mr-3"}>
           <Link href="/store/cart" className="mr-3 border-solid border-2 border-indigo-600 p-2 rounded-full">
               <FontAwesomeIcon icon={faShoppingCart} />
-              <span className="ml-2">Carrito <span className="rounded-full bg-gray-500 p-1 text-white">0</span></span>
+              <span className="ml-2">Carrito <span className="rounded-full bg-gray-500 p-1 text-white">{numeral(total).format("$0.00")}</span></span>
           </Link>
           <button onClick={()=>{console.log(session);signIn()}} className="">
             <FontAwesomeIcon icon={faUser}  className={"ml-1 mr-2"}/>
@@ -62,7 +87,7 @@ const Home: NextPage = () => {
       </nav>
       <main className="container mx-auto flex-col items-center justify-center p-4">
         <div className="flex flex-col items-center justify-center gap-2">
-          <div className="grid grid-cols-1 sm grid-cols-2 md grid-cols-3 lg grid-cols-6 xl grid-cols-12 gap-4">
+          <div className="grid grid-cols-1 sm grid-cols-2 md grid-cols-3 lg grid-cols-6 xl grid-cols-6 gap-4">
             {rows}
           </div>
         </div>
