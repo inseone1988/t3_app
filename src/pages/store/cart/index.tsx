@@ -7,12 +7,32 @@ import { signIn, useSession } from "next-auth/react";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faShoppingCart, faUser } from "@fortawesome/free-solid-svg-icons";
 import { useState } from "react";
-import {CartView} from "../../../../components/cartview";
+import { CartView } from "../../../../components/cartview";
+import Swal from "sweetalert2";
 
 const Cart: NextPage = () => {
-  const {data: user } = trpc.user.getOne.useQuery({id:'1'});
-  const {data: shoppingCart } = trpc.shoppingCart.getCustomerCart.useQuery();
+  const { data: user } = trpc.user.getOne.useQuery({ id: "1" });
+  const { data: shoppingCart } = trpc.shoppingCart.getCustomerCart.useQuery();
+  const { data: cartItems } = trpc.cartItem.getCartItems.useQuery({ cartId: shoppingCart?.id });
+  const { mutate: checkOut } = trpc.shoppingCart.checkOut.useMutation();
   const [cart, setCart] = useState(shoppingCart);
+
+  function checkout() {
+    checkOut({ id: shoppingCart.id }, {
+      onSuccess: (data) => {
+        Swal.fire({
+          title: "Success!",
+          text: "Your order has been placed!",
+          icon: "success",
+          confirmButtonText: "Ok"
+        }).then((result) => {
+          if (result.isConfirmed) {
+            window.location = "/store";
+          }
+        });
+      }
+    });
+  }
 
   return (
     <>
@@ -33,12 +53,15 @@ const Cart: NextPage = () => {
           </Link>
           <button className="">
             <FontAwesomeIcon icon={faUser} className={"ml-1 mr-2"} />
-            <span className="ml-2">{user?user.name:"Iniciar sesion"}</span>
+            <span className="ml-2">{user ? user.name : "Iniciar sesion"}</span>
           </button>
         </div>
       </nav>
       <main>
-        <CartView shoppingCart={cart} />
+        <div>
+          <h1 className={"text-center text-4xl font-bold"}>Carrito de compra</h1>
+        </div>
+        <CartView checkout={checkout} shoppingCart={shoppingCart} cartItems={cartItems} />
       </main>
     </>
   );

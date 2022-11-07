@@ -6,6 +6,7 @@ export const shoppingCartRouter = router({
     let sc = await ctx.prisma.shoppingCart.findFirst({
       where: {
         userId: "1",
+        active: true
       },
       include: {
         CartItems: true,
@@ -30,6 +31,35 @@ export const shoppingCartRouter = router({
     .mutation(({input,ctx}) => {
       return ctx.prisma.shoppingCart.create({
         data: input,
+      });
+    }),
+  checkOut : publicProcedure
+    .input(z.object({
+      id : z.string().min(1),
+    }))
+    .mutation(async ({input,ctx}) => {
+      return ctx.prisma.shoppingCart.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          active: false,
+        },
+      });
+    }),
+  updateCart: publicProcedure
+    .input(z.object({
+      id: z.string().min(1),
+      total: z.string().min(1),
+    }))
+    .mutation(async ({input,ctx}) => {
+      return ctx.prisma.shoppingCart.update({
+        where: {
+          id: input.id,
+        },
+        data: {
+          total: input.total,
+        },
       });
     }),
 });

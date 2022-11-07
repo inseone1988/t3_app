@@ -54,6 +54,20 @@ function ProductsView(props: ProductViewProps) {
     setIsNew(true);
   }
 
+  function saveNewProduct(){
+    createOneProduct(selectedProduct, {
+      onSuccess: () => {
+        Swal.fire(
+          "Creado!",
+          "El producto ha sido creado.",
+          "success"
+        );
+        setView("gridlist");
+        setIsNew(false);
+      }
+    });
+  }
+
   function EditProduct() {
     return (
       <div className="flex flex-col items-center justify-center">
@@ -83,7 +97,7 @@ function ProductsView(props: ProductViewProps) {
             <button onClick={()=>setView(isNew?"gridView":"productInfo")} className={"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"}>
               Cancelar
             </button>
-            <button onClick={()=>isNew?createProduct():updateProduct()} className={"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-1"}>
+            <button onClick={()=>isNew?saveNewProduct():updateProduct()} className={"bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded mr-1"}>
               Guardar
             </button>
           </div>
@@ -93,22 +107,29 @@ function ProductsView(props: ProductViewProps) {
   }
 
   function updateSelectedProductValue(e){
-    setSelectedProduct({
-      ...selectedProduct,
-      [e.target.name]: e.target.value
-    });
+    selectedProduct[e.target.name] = e.target.value;
+    setSelectedProduct(selectedProduct);
   }
 
   function updateProduct() {
+    console.log("Hello");
     updateOneProduct(selectedProduct, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        console.log(data);
         Swal.fire(
           "Actualizado!",
           "El producto ha sido actualizado.",
           "success"
         );
         setView("productInfo");
-      }
+      },
+      onError: (err) => {
+        Swal.fire({
+          icon: "error",
+          title: "Oops...",
+          text: err.message
+        });
+        }
     });
   }
 

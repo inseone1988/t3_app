@@ -21,23 +21,26 @@ const Home: NextPage = () => {
   const [cart, setCart] = useState<Cart>({ id: "", items: [], total: 0,active:true});
   const [itemcount, setItemcount] = useState<number>(0);
   const [total, setTotal] = useState<number>(0);
+  const {mutate: updateCart} = trpc.shoppingCart.updateCart.useMutation();
 
   function addToCart(product: Product) {
-    const newCart = { ...cart };
-    newCart.userId = ("id" in user.data)?user.data.id:"";
-    const data = {
-      userId: user.data?user.data.id:"1",
-      quantity: 1,
-      product: product,
-      cartId:("id" in sCart.data)?sCart.data.id:"" ,
-      productId:product.id }
-    newCart.items.push(data);
-    newCart.total += Number(product.price);
-    saveCartItem(data);
-    console.log(newCart);
-    setItemcount(newCart.items.length);
-    setTotal(newCart.total);
-    setCart(newCart);
+    console.log(sCart.data);
+    if (sCart.data) {
+      saveCartItem({cartId: sCart.data.id, productId: product.id,quantity:1}, {
+        onSuccess: (data) => {
+          console.log(data);
+          sCart.data.total = `${Number(sCart.data.total) + Number(product.price)}`;
+          sCart.data.CartItems.push(data);
+          updateCart({id: sCart.data.id,total:sCart.data.total}, {
+            onSuccess: (data) => {
+              setCart(data);
+              setItemcount(sCart.data.CartItems.length);
+              setTotal(data.total);
+            }
+          });
+        }
+      });
+    }
   }
 
   const rows = products.data?products.data.map((product:Product,index:number) => {
